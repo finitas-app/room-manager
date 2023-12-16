@@ -8,11 +8,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
 }
 
-group = "finitas.pl"
+group = "pl.finitas"
 version = "0.0.1"
 
 application {
-    mainClass.set("finitas.pl.ApplicationKt")
+    mainClass.set("pl.finitas.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -27,11 +27,12 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 
-    // mongo
-    implementation("org.litote.kmongo:kmongo:4.5.0")
-
+    // MongoDB
+    implementation("org.litote.kmongo:kmongo:4.11.0")
+    implementation("org.litote.kmongo:kmongo-coroutine:4.11.0")
 }

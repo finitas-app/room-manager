@@ -1,10 +1,11 @@
-package finitas.pl
+package pl.finitas
 
-import finitas.pl.configuration.configureRouting
-import finitas.pl.configuration.configureSerialization
+import pl.finitas.configuration.configureRouting
+import pl.finitas.configuration.serialization.configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import pl.finitas.configuration.exceptions.configureExceptions
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -13,5 +14,6 @@ fun main() {
 
 fun Application.module() {
     configureSerialization()
+    configureExceptions()
     configureRouting()
 }

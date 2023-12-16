@@ -1,4 +1,4 @@
-package finitas.pl
+package pl.finitas
 
 import finitas.pl.plugins.*
 import io.ktor.client.request.*
