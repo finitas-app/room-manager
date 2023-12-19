@@ -47,11 +47,16 @@ object RoomStore {
                         Room::members elemMatch (RoomMember::idUser eq idUser)
                     ),
                 ).toList()
-            } + roomCollection.find(
-                and(
-                    not(Room::idRoom `in` roomVersions.map { it.idRoom }),
-                    Room::members elemMatch (RoomMember::idUser eq idUser)
-                )
-            ).toList()
+            } +
+                roomCollection.find(
+                    and(
+                        not(Room::idRoom `in` roomVersions.map { it.idRoom }),
+                        Room::members elemMatch (RoomMember::idUser eq idUser)
+                    )
+                ).toList()
+    }
+
+    suspend fun getRoomsBy(roomIds: List<UUID>): List<Room> {
+        return roomCollection.find(Room::idRoom `in` roomIds).toList()
     }
 }

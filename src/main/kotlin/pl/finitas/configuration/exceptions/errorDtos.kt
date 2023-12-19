@@ -12,4 +12,5 @@ enum class ErrorCode {
     GENERIC_ERROR,
     AUTH_ERROR,
     ROOM_NOT_FOUND,
+    SYNCHRONIZATION_ERROR,
 }

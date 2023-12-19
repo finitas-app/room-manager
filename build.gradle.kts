@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -35,4 +37,11 @@ dependencies {
     // MongoDB
     implementation("org.litote.kmongo:kmongo:4.11.0")
     implementation("org.litote.kmongo:kmongo-coroutine:4.11.0")
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs += "-Xjsr305=strict"
+        jvmTarget = "17"
+    }
 }

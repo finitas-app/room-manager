@@ -1,6 +1,7 @@
 package pl.finitas.domain
 
 import pl.finitas.application.CreateRoomRequest
+import pl.finitas.application.GetChangedRoomsDto
 import pl.finitas.application.JoinRoomWithInvitationRequest
 import pl.finitas.data.datasource.RoomStore
 import pl.finitas.data.model.Room
@@ -27,5 +28,10 @@ object RoomService {
     ) = RoomStore.addUserToRoomWithInvitationLink(
         joinRoomWithInvitationRequest.idInvitationLink,
         joinRoomWithInvitationRequest.idUser,
+    )
+
+    suspend fun getChangedRooms(getChangedRoomsDto: GetChangedRoomsDto) = RoomStore.getChangedRooms(
+        getChangedRoomsDto.idUser,
+        getChangedRoomsDto.roomVersions,
     )
 }

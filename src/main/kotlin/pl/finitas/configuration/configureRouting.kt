@@ -7,7 +7,9 @@ import pl.finitas.application.roomRouter
 
 fun Application.configureRouting() {
     routing {
-        roomRouter()
-        messageRouter()
+        route("/api") {
+            roomRouter()
+            messageRouter()
+        }
     }
 }

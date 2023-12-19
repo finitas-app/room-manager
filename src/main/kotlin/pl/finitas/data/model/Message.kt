@@ -14,7 +14,6 @@ data class Message(
     val idUser: UUID,
     @Serializable(with = UUIDSerializer::class)
     val idRoom: UUID,
-    val messageType: MessageType,
     @Serializable(with = LocalDateTimeSerializer::class)
     val createdAt: LocalDateTime,
     val version: Int,
@@ -22,8 +21,3 @@ data class Message(
     val idShoppingList: UUID? = null,
     val content: String? = null,
 )
-
-enum class MessageType {
-    TEXT,
-    SHOPPING_LIST,
-}

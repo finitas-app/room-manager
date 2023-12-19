@@ -20,10 +20,11 @@ data class Room(
 data class RoomRole(
     @Serializable(UUIDSerializer::class)
     val idRole: UUID,
-    val authorities: List<Authority>,
+    val name: String,
+    val authorities: Set<Authority>,
 ) {
     companion object {
-        val Owner = RoomRole(UUID.randomUUID(), Authority.entries)
+        val Owner = RoomRole(UUID.randomUUID(), "Owner", Authority.entries.toSet())
     }
 }
 

@@ -2,7 +2,6 @@ package pl.finitas.domain
 
 import kotlinx.serialization.Serializable
 import pl.finitas.configuration.serialization.UUIDSerializer
-import pl.finitas.data.model.MessageType
 import java.util.*
 
 @Serializable
@@ -27,7 +26,6 @@ data class MessageDto(
     val idUser: UUID,
     @Serializable(UUIDSerializer::class)
     val idRoom: UUID,
-    val messageType: MessageType,
     @Serializable(UUIDSerializer::class)
     val idShoppingList: UUID? = null,
     val content: String? = null,
