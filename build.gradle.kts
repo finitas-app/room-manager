@@ -12,6 +12,9 @@ plugins {
 
 group = "pl.finitas"
 version = "0.0.1"
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
 application {
     mainClass.set("pl.finitas.ApplicationKt")
@@ -41,7 +44,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
+        freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "17"
     }
 }
