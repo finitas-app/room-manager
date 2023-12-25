@@ -10,7 +10,7 @@ data class ErrorResponse(
 
 enum class ErrorCode {
     GENERIC_ERROR,
-    AUTH_ERROR,
     ROOM_NOT_FOUND,
     SYNCHRONIZATION_ERROR,
+    ID_USER_NOT_PROVIDED,
 }

@@ -6,7 +6,10 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
+import pl.finitas.configuration.exceptions.BadRequestException
+import pl.finitas.configuration.exceptions.ErrorCode
 import pl.finitas.configuration.serialization.UUIDSerializer
+import pl.finitas.data.datasource.RoomStore
 import pl.finitas.domain.RoomService
 import pl.finitas.domain.RoomVersionDto
 import java.util.*
@@ -16,6 +19,13 @@ fun Route.roomRouter() {
         post {
             RoomService.createRoom(call.receive())
                 .let { call.respond(HttpStatusCode.Created, it) }
+        }
+        get("/users") {
+            val idRoom = call.parameters["idRoom"]?.let { UUID.fromString(it) }
+            val idUser  = call.parameters["idUser"]?.let { UUID.fromString(it) } ?: throw UserNotProvidedException()
+            RoomStore
+                .getReachableUsersForUser(idUser, idRoom)
+                .let { call.respond(HttpStatusCode.OK, it) }
         }
         post("/users") {
             RoomService.joinRoomWithInvitationLinkId(call.receive())
@@ -49,3 +59,5 @@ data class GetChangedRoomsDto(
     val idUser: UUID,
     val roomVersions: List<RoomVersionDto>,
 )
+
+class UserNotProvidedException: BadRequestException("idUser not provided", ErrorCode.ID_USER_NOT_PROVIDED)

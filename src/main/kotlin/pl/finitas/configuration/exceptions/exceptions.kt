@@ -15,23 +15,11 @@ class NotFoundException(
     cause: Exception? = null,
 ) : BaseException(message, errorCode, cause, HttpStatusCode.NotFound)
 
-class BadRequestException(
+open class BadRequestException(
     message: String = "Bad request",
     errorCode: ErrorCode,
     cause: Exception? = null,
 ) : BaseException(message, errorCode, cause, HttpStatusCode.BadRequest)
-
-class UnauthorizedException(
-    message: String = "Unauthorized",
-    errorCode: ErrorCode = ErrorCode.AUTH_ERROR,
-    cause: Exception? = null,
-) : BaseException(message, errorCode, cause, HttpStatusCode.Unauthorized)
-
-class ConflictException(
-    errorCode: ErrorCode,
-    message: String = "Conflict",
-    cause: Exception? = null,
-) : BaseException(message, errorCode, cause, HttpStatusCode.Conflict)
 
 class InternalServerException(
     message: String = "Internal Server Error",

@@ -1,8 +1,10 @@
 package pl.finitas.data.datasource
 
+import kotlinx.serialization.Serializable
 import org.litote.kmongo.*
 import pl.finitas.configuration.exceptions.ErrorCode
 import pl.finitas.configuration.exceptions.NotFoundException
+import pl.finitas.configuration.serialization.SerializableUUID
 import pl.finitas.data.database.mongoClient
 import pl.finitas.data.database.mongoDatabase
 import pl.finitas.data.model.Room
@@ -59,4 +61,26 @@ object RoomStore {
     suspend fun getRoomsBy(roomIds: List<UUID>): List<Room> {
         return roomCollection.find(Room::idRoom `in` roomIds).toList()
     }
+
+    suspend fun getReachableUsersForUser(idUser: UUID, idRoom: UUID?): ReachableUsersDto {
+        val idUserContains = Room::members elemMatch (RoomMember::idUser eq idUser)
+        return roomCollection
+            .find(
+                if (idRoom == null)
+                    idUserContains
+                else
+                    and(
+                        idUserContains,
+                        (Room::idRoom eq idRoom),
+                    )
+            )
+            .toList()
+            .flatMap { room -> room.members.map { it.idUser } }
+            .let { ReachableUsersDto(it.distinct()) }
+    }
 }
+
+@Serializable
+data class ReachableUsersDto(
+    val reachableUsers: List<SerializableUUID>,
+)
