@@ -2,34 +2,50 @@ package pl.finitas.domain
 
 import pl.finitas.application.*
 import pl.finitas.data.datasource.MessageStore
-import pl.finitas.data.datasource.RoomStore
+import pl.finitas.data.datasource.getRoomsBy
+import pl.finitas.data.datasource.hasAnyAuthority
 import java.util.*
 
 object MessageService {
 
     suspend fun addMessage(sendMessageRequest: SendMessageRequest): NewMessagesDto {
-        val response = MessageStore.addMessages(sendMessageRequest.messages.map { it.toMessageDto(sendMessageRequest.idUser) })
-        return getMessagesFromVersion(
-            SyncMessagesFromVersionDto(
-                sendMessageRequest.idUser,
-                response,
-            )
+        val (messages, unavailableMessages) = sendMessageRequest.messages.partition {
+            hasAnyAuthority(sendMessageRequest.idUser, it.idRoom)
+        }
+        val response = MessageStore.addMessages(messages.map { it.toMessageDto(sendMessageRequest.idUser) })
+        return NewMessagesDto(
+            messages = getMessagesFromVersionForUsers(
+                SyncMessagesFromVersionDto(
+                    sendMessageRequest.idUser,
+                    response,
+                )
+            ),
+            unavailableRooms = unavailableMessages.map { it.idRoom }
         )
     }
 
-    suspend fun getMessagesFromVersion(syncMessagesFromVersionDto: SyncMessagesFromVersionDto): NewMessagesDto {
+    private suspend fun getMessagesFromVersionForUsers(syncMessagesFromVersionDto: SyncMessagesFromVersionDto): List<MessagesForUsers> {
         val newMessages = MessageStore.readMessagesFromVersion(syncMessagesFromVersionDto.lastMessagesVersions)
-        val roomsById = RoomStore
-            .getRoomsBy(newMessages.keys.toList())
+        val roomsById =
+            getRoomsBy(newMessages.keys.toList())
             .groupBy { it.idRoom }
             .mapValues { it.value[0] }
-        return NewMessagesDto(
-            newMessages.map { (idRoom, messages) ->
-                MessagesForUsers(
-                    roomsById[idRoom]!!.members.map { it.idUser },
-                    messages
-                )
-            }
+        return newMessages.map { (idRoom, messages) ->
+            MessagesForUsers(
+                roomsById[idRoom]!!.members.map { it.idUser },
+                messages
+            )
+        }
+    }
+
+    suspend fun getMessagesFromVersion(syncMessagesFromVersionDto: SyncMessagesFromVersionDto): SyncMessageResponse {
+        val (lastMessageVersions, unavailableMessages) = syncMessagesFromVersionDto.lastMessagesVersions.partition {
+            hasAnyAuthority(syncMessagesFromVersionDto.idUser, it.idRoom)
+        }
+
+        return SyncMessageResponse(
+            MessageStore.readMessagesFromVersion(lastMessageVersions).flatMap { it.value },
+            unavailableMessages.map { it.idRoom }
         )
     }
 }

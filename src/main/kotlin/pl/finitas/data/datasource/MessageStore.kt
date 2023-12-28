@@ -17,7 +17,6 @@ import java.util.*
 private val messageCollection = mongoDatabase.getCollection<Message>()
 
 object MessageStore {
-
     suspend fun addMessages(messages: List<MessageDto>): List<MessagesVersionDto> {
         return messages.groupBy { it.idRoom }.map { (idRoom, messages) ->
             mongoClient.startSession().use { clientSession ->

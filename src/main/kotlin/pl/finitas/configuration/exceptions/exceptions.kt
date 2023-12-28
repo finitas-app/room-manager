@@ -9,7 +9,7 @@ open class BaseException(
     val statusCode: HttpStatusCode = HttpStatusCode.InternalServerError,
 ) : Exception(message, cause)
 
-class NotFoundException(
+open class NotFoundException(
     message: String = "Not found",
     errorCode: ErrorCode,
     cause: Exception? = null,
@@ -20,6 +20,12 @@ open class BadRequestException(
     errorCode: ErrorCode,
     cause: Exception? = null,
 ) : BaseException(message, errorCode, cause, HttpStatusCode.BadRequest)
+
+class ForbiddenException(
+    message: String,
+    errorCode: ErrorCode = ErrorCode.WRONG_AUTHORITY,
+    cause: Exception? = null,
+) : BaseException(message, errorCode, cause, HttpStatusCode.Forbidden)
 
 class InternalServerException(
     message: String = "Internal Server Error",
