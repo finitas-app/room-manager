@@ -5,6 +5,7 @@ import org.litote.kmongo.combine
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 import pl.finitas.application.UsersToNotifyResponse
+import pl.finitas.configuration.exceptions.BadRequestException
 import pl.finitas.configuration.exceptions.ErrorCode
 import pl.finitas.configuration.exceptions.NotFoundException
 import pl.finitas.configuration.serialization.SerializableUUID
@@ -23,6 +24,7 @@ suspend fun addUserToRoomWithInvitationLink(idInvitationLink: UUID, idUser: UUID
                 "Room with invitation link '$idInvitationLink' not found.",
                 ErrorCode.ROOM_NOT_FOUND,
             )
+        if (room.members.find { it.idUser == idUser } != null) throw UserAlreadyExist(idUser)
         val newMembers = room.members + RoomMember(idUser)
         roomCollection.updateOne(
             Room::idInvitationLink eq idInvitationLink,
@@ -57,7 +59,7 @@ suspend fun assignRoleToUser(assignRoleToUserDto: AssignRoleToUserDto): UsersToN
     mongoClient.startSession().use { clientSession ->
         clientSession.startTransaction()
         val room = getRoomBy(idRoom)
-        val roleToAssign = idRole?.let {
+        idRole?.let {
             room.roles.find { role -> role.idRole == it } ?: throw RoleNotFoundException(it)
         }
         roomCollection.updateOne(
@@ -66,7 +68,7 @@ suspend fun assignRoleToUser(assignRoleToUserDto: AssignRoleToUserDto): UsersToN
                 setValue(
                     Room::members,
                     room.members.map { user ->
-                        if (user.idUser == idUser) user.copy(roomRole = roleToAssign)
+                        if (user.idUser == idUser) user.copy(idRole = idRole)
                         else user
                     }
                 ),
@@ -87,3 +89,8 @@ data class AssignRoleToUserDto(
 
 class RoleNotFoundException(idRole: UUID) :
     NotFoundException("Role with id '$idRole' not found!", ErrorCode.ROLE_NOT_FOUND)
+
+class UserAlreadyExist(idUser: UUID) : BadRequestException(
+    "User with id '$idUser' already exist",
+    ErrorCode.USER_ALREADY_JOINED_ROOM,
+)

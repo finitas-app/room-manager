@@ -40,6 +40,16 @@ fun Route.roomRouter() {
                     )
                 }
         }
+        post("/regenerate-link") {
+            hasAllAuthority(Authority.MODIFY_ROOM)
+            val idRoom = getIdRoomContext()
+            call.respond(HttpStatusCode.OK, regenerateRoomLink(idRoom))
+        }
+        patch("/name") {
+            hasAllAuthority(Authority.MODIFY_ROOM)
+            val idRoom = getIdRoomContext()
+            call.respond(HttpStatusCode.OK, changeRoomName(idRoom, call.receive<ChangeRoomNameRequest>().newRoomName))
+        }
         usersRouter()
         rolesRouter()
     }
@@ -104,14 +114,17 @@ data class CreateRoomRequest(
     val creator: SerializableUUID,
     val roomName: String,
 ) {
-    fun toModel() = Room(
-        idRoom = UUID.randomUUID(),
-        name = roomName,
-        idInvitationLink = UUID.randomUUID(),
-        version = 0,
-        roles = listOf(RoomRole.Owner),
-        members = listOf(RoomMember(creator, RoomRole.Owner))
-    )
+    fun toModel(): Room {
+        val ownerRole = RoomRole.Owner
+        return Room(
+            idRoom = UUID.randomUUID(),
+            name = roomName,
+            idInvitationLink = UUID.randomUUID(),
+            version = 0,
+            roles = listOf(ownerRole),
+            members = listOf(RoomMember(creator, ownerRole.idRole))
+        )
+    }
 }
 
 @Serializable
@@ -186,4 +199,9 @@ data class DeleteUserRequest(
 @Serializable
 data class UsersToNotifyResponse(
     val usersToNotify: List<SerializableUUID>,
+)
+
+@Serializable
+data class ChangeRoomNameRequest(
+    val newRoomName: String,
 )

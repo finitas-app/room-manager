@@ -2,9 +2,11 @@ package pl.finitas.data.datasource
 
 import kotlinx.serialization.Serializable
 import org.litote.kmongo.*
+import pl.finitas.application.UsersToNotifyResponse
 import pl.finitas.configuration.exceptions.ErrorCode
 import pl.finitas.configuration.exceptions.NotFoundException
 import pl.finitas.configuration.serialization.SerializableUUID
+import pl.finitas.data.database.mongoClient
 import pl.finitas.data.database.roomCollection
 import pl.finitas.data.model.Room
 import pl.finitas.data.model.RoomMember
@@ -63,7 +65,51 @@ suspend fun getReachableUsersForUser(idUser: UUID, idRoom: UUID?): ReachableUser
         .let { ReachableUsersDto(it.distinct()) }
 }
 
+suspend fun regenerateRoomLink(idRoom: UUID): RegenerateLinkResponse {
+    mongoClient.startSession().use { clientSession ->
+        clientSession.startTransaction()
+        val newInvitationLink = UUID.randomUUID()
+        val room = getRoomBy(idRoom)
+        roomCollection.updateOne(
+            Room::idRoom eq idRoom,
+            combine(
+                setValue(Room::idInvitationLink, newInvitationLink),
+                setValue(Room::version, room.version + 1),
+            )
+        )
+        clientSession.commitTransaction()
+        return RegenerateLinkResponse(
+            invitationLinkUUID = newInvitationLink,
+            usersToNotify = room.members.map { it.idUser }
+        )
+    }
+}
+
+suspend fun changeRoomName(idRoom: UUID, newName: String): UsersToNotifyResponse {
+    mongoClient.startSession().use { clientSession ->
+        clientSession.startTransaction()
+        val room = getRoomBy(idRoom)
+        roomCollection.updateOne(
+            Room::idRoom eq idRoom,
+            combine(
+                setValue(Room::name, newName),
+                setValue(Room::version, room.version + 1),
+            )
+        )
+        clientSession.commitTransaction()
+        return UsersToNotifyResponse(
+            room.members.map { it.idUser }
+        )
+    }
+}
+
 @Serializable
 data class ReachableUsersDto(
     val reachableUsers: List<SerializableUUID>,
+)
+
+@Serializable
+data class RegenerateLinkResponse(
+    val invitationLinkUUID: SerializableUUID,
+    val usersToNotify: List<SerializableUUID>,
 )

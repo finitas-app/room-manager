@@ -34,20 +34,20 @@ suspend fun PipelineContext<Unit, ApplicationCall>.hasAllAuthority(authorities: 
 }
 
 fun PipelineContext<Unit, ApplicationCall>.getRequester() =
-    call.parameters["requester"]?.let(UUID::fromString) ?: throw idUserNotProvided()
+    call.request.queryParameters["requester"]?.let(UUID::fromString) ?: idUserNotProvided()
 
 fun PipelineContext<Unit, ApplicationCall>.getIdRoomContext() =
-    call.parameters["idRoomContext"]?.let(UUID::fromString) ?: throw idRoomNotProvided()
+    call.request.queryParameters["idRoomContext"]?.let(UUID::fromString) ?: idRoomNotProvided()
 
 private fun PipelineContext<Unit, ApplicationCall>.getDataForAuthorization() =
     getRequester() to getIdRoomContext()
 
-fun idUserNotProvided() = ForbiddenException("Id user not provided for authorization")
-fun idRoomNotProvided() = ForbiddenException("Id room not provided for authorization")
+fun idUserNotProvided(): Nothing = throw ForbiddenException("Id user not provided for authorization")
+fun idRoomNotProvided(): Nothing = throw ForbiddenException("Id room not provided for authorization")
 
 
-private fun userDoesNotHaveAnyAuthority(authorities: Set<Authority>) =
-    ForbiddenException("The user does not have any authority: $authorities")
+private fun userDoesNotHaveAnyAuthority(authorities: Set<Authority>): Nothing =
+    throw ForbiddenException("The user does not have any authority: $authorities")
 
-private fun userDoesNotHaveAllAuthorities(authorities: Set<Authority>) =
-    ForbiddenException("The user does not have all authority: $authorities")
+private fun userDoesNotHaveAllAuthorities(authorities: Set<Authority>): Nothing =
+    throw ForbiddenException("The user does not have all authority: $authorities")

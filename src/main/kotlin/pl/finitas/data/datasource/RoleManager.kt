@@ -63,6 +63,7 @@ suspend fun deleteRole(deleteRoleDto: DeleteRoleDto): UsersToNotifyResponse {
             Room::idRoom eq deleteRoleDto.idRoom,
             combine(
                 setValue(Room::roles, room.roles.filter { it.idRole != deleteRoleDto.idRole }),
+                setValue(Room::members, room.members.map { if (it.idRole == deleteRoleDto.idRole) it.copy(idRole = null) else it }),
                 setValue(Room::version, room.version + 1),
             )
         )
@@ -73,21 +74,27 @@ suspend fun deleteRole(deleteRoleDto: DeleteRoleDto): UsersToNotifyResponse {
     }
 }
 
+//TODO: Refactor
 suspend fun hasAnyAuthority(idUser: UUID, idRoom: UUID, authorities: Set<Authority> = setOf()): Boolean {
-    val member = findRoomMember(idUser, idRoom) ?: return false
-    val memberAuthorities = member.roomRole?.authorities ?: setOf()
-    return !(authorities.isNotEmpty() && !memberAuthorities.any { it in authorities })
+    val room = findRoomBy(idRoom) ?: return false
+    val member = room.members.find { it.idUser == idUser } ?: return false
+    val memberAuthorities = room.roles.find { member.idRole == it.idRole }?.authorities
+    if (authorities.isEmpty()) return true
+    if (memberAuthorities == null) return false
+    return memberAuthorities.any { it in authorities }
 }
 
+//TODO: Refactor
 suspend fun hasAllAuthority(idUser: UUID, idRoom: UUID, authorities: Set<Authority> = setOf()): Boolean {
-    val member = findRoomMember(idUser, idRoom) ?: return false
-    val memberAuthorities = member.roomRole?.authorities ?: setOf()
-    return !(authorities.isNotEmpty() && !memberAuthorities.containsAll(authorities))
+    val room = findRoomBy(idRoom) ?: return false
+    val member = room.members.find { it.idUser == idUser } ?: return false
+    val memberAuthorities = room.roles.find { member.idRole == it.idRole }?.authorities
+    if (authorities.isEmpty()) return true
+    if (memberAuthorities == null) return false
+    return memberAuthorities.containsAll(authorities)
 }
 
-private suspend fun findRoomMember(idUser: UUID, idRoom: UUID) = findRoomBy(idRoom)
-    ?.members
-    ?.find { it.idUser == idUser }
+
 
 @Serializable
 data class AddRoleDto(
