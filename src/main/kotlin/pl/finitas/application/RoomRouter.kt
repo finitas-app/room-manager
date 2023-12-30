@@ -58,8 +58,8 @@ fun Route.roomRouter() {
 fun Route.usersRouter() {
     route("/users") {
         get {
-            val idRoom = call.parameters["idRoom"]?.let { UUID.fromString(it) }
-            val idUser  = call.parameters["idUser"]?.let { UUID.fromString(it) } ?: throw UserNotProvidedException()
+            val idRoom = call.request.queryParameters["idRoom"]?.let { UUID.fromString(it) }
+            val idUser  = call.request.queryParameters["idUser"]?.let { UUID.fromString(it) } ?: throw UserNotProvidedException()
             getReachableUsersForUser(idUser, idRoom)
                 .let { call.respond(HttpStatusCode.OK, it) }
         }
