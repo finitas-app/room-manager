@@ -16,7 +16,7 @@ private val connectionString = run {
     when (profile) {
         "docker" -> "mongodb://room-manager-mongo-db:27017"
         "kub" -> "mongodb://rm-db-service:27017"
-        else -> "mongodb://localhost:27017"
+        else -> "mongodb://localhost:27018"
     }
 }
 
