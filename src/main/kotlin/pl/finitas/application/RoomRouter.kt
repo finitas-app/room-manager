@@ -61,7 +61,9 @@ fun Route.usersRouter() {
             val idRoom = call.request.queryParameters["idRoom"]?.let { UUID.fromString(it) }
             val idUser  = call.request.queryParameters["idUser"]?.let { UUID.fromString(it) } ?: throw UserNotProvidedException()
             getReachableUsersForUser(idUser, idRoom)
-                .let { call.respond(HttpStatusCode.OK, it) }
+                .let {
+                    call.respond(HttpStatusCode.OK, it)
+                }
         }
         post {
             val request: JoinRoomWithInvitationRequest = call.receive()

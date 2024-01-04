@@ -62,7 +62,7 @@ suspend fun getReachableUsersForUser(idUser: UUID, idRoom: UUID?): ReachableUser
         )
         .toList()
         .flatMap { room -> room.members.map { it.idUser } }
-        .let { ReachableUsersDto(it.distinct()) }
+        .let { ReachableUsersDto((it + idUser).distinct()) }
 }
 
 suspend fun regenerateRoomLink(idRoom: UUID): RegenerateLinkResponse {
