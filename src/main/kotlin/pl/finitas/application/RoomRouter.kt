@@ -50,6 +50,14 @@ fun Route.roomRouter() {
             val idRoom = getIdRoomContext()
             call.respond(HttpStatusCode.OK, changeRoomName(idRoom, call.receive<ChangeRoomNameRequest>().newRoomName))
         }
+        get("/users-under-authority") {
+            val idUser = call.request.queryParameters["idUser"]?.let(UUID::fromString)
+                ?: throw BadRequestException("IdUser not provided", errorCode = ErrorCode.ILLEGAL_ARGUMENT)
+            val authority = call.request.queryParameters["authority"]?.let(Authority::valueOf)
+                ?: throw BadRequestException("Authority not provided", errorCode = ErrorCode.ILLEGAL_ARGUMENT)
+
+            call.respond(HttpStatusCode.OK, getUsersUnderAuthority(idUser, authority))
+        }
         usersRouter()
         rolesRouter()
     }

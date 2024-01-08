@@ -2,6 +2,7 @@ package pl.finitas.data.datasource
 
 import kotlinx.serialization.Serializable
 import org.litote.kmongo.combine
+import org.litote.kmongo.elemMatch
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 import pl.finitas.application.UsersToNotifyResponse
@@ -11,6 +12,7 @@ import pl.finitas.configuration.exceptions.NotFoundException
 import pl.finitas.configuration.serialization.SerializableUUID
 import pl.finitas.data.database.mongoClient
 import pl.finitas.data.database.roomCollection
+import pl.finitas.data.model.Authority
 import pl.finitas.data.model.Room
 import pl.finitas.data.model.RoomMember
 import java.util.*
@@ -80,6 +82,19 @@ suspend fun assignRoleToUser(assignRoleToUserDto: AssignRoleToUserDto): UsersToN
     }
 }
 
+suspend fun getUsersUnderAuthority(idUser: UUID, authority: Authority):UsersUnderAuthorityResponse  {
+    return roomCollection.find(
+        Room::members elemMatch (RoomMember::idUser eq idUser)
+    )
+        .toList()
+        .filter { room ->
+            val rolesWithAuthority = room.roles.filter { authority in it.authorities }.map { it.idRole }
+            room.members.find { it.idUser == idUser }?.idRole in rolesWithAuthority
+        }
+        .flatMap { room -> room.members.map { it.idUser } }
+        .let { UsersUnderAuthorityResponse((it + idUser).toSet()) }
+}
+
 @Serializable
 data class AssignRoleToUserDto(
     val idRoom: SerializableUUID,
@@ -93,4 +108,9 @@ class RoleNotFoundException(idRole: UUID) :
 class UserAlreadyExist(idUser: UUID) : BadRequestException(
     "User with id '$idUser' already exist",
     ErrorCode.USER_ALREADY_JOINED_ROOM,
+)
+
+@Serializable
+data class UsersUnderAuthorityResponse(
+    val users: Set<SerializableUUID>,
 )
