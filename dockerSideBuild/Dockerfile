@@ -4,4 +4,4 @@ VOLUME /tmp
 WORKDIR /app
 COPY . .
 RUN ./gradlew clean build -x test
-ENTRYPOINT ["java", "-jar", "./build/libs/room-manageer-0.0.1.jar"]
+ENTRYPOINT ["java", "-jar", "./build/libs/room-manageer-all.jar"]
